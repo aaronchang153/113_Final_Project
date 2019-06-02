@@ -91,9 +91,11 @@ static int find_most_recent(struct CIMIS_data *data){
 			continue;
 		}
 		// if we get here, then this line is the line that we're looking for
-		// get the fourth field and put it into data->et0 and then exit the loop
+		// get the fifth field and put it into data->et0 and then exit the loop
+		// (the fourth field is useless)
 		tok = strtok(NULL, ",");
-		data->et0 = atoi(tok);
+		tok = strtok(NULL, ",");
+		data->et0 = atof(tok);
 		break;
 	}
 
@@ -153,7 +155,7 @@ int get_latest_data(struct CIMIS_data *data){
 int main(){
 	struct CIMIS_data d;
 	get_latest_data(&d);
-	printf("%d,%s,%d,%d\n", d.station, d.date, d.hour, d.et0);
+	printf("%d,%s,%d,%f\n", d.station, d.date, d.hour, d.et0);
 	return 0;
 }
 
