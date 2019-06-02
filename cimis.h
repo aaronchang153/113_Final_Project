@@ -1,7 +1,7 @@
 #ifndef CIMIS_H
 #define CIMIS_H
 
-// stores the data we need from CIMS
+// stores the data we need from CIMIS
 struct CIMIS_data{
 	int station;
 	char date[15];
