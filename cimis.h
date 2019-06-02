@@ -9,6 +9,8 @@ struct CIMIS_data{
 	int et0;
 };
 
+// gets the lastest information from the CIMIS FTP server and puts necessary information into the data struct
+// returns 0 on success and non-zero otherwise
 int get_latest_data(struct CIMIS_data *data);
 
 
