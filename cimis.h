@@ -5,8 +5,10 @@
 struct CIMIS_data{
 	int station;
 	char date[15];
-	int hour; // NOTE: this is in PST (not to be confused with PDT)
+	int hour; // NOTE: this is in PST (not PDT)
 	double et0;
+	double air_temp; // in Fahrenheit
+	double humidity; // in percent (not decimal)
 };
 
 // gets the lastest information from the CIMIS FTP server and puts necessary information into the data struct

@@ -67,14 +67,11 @@ static int find_most_recent(struct CIMIS_data *data){
 	get_time_date(&hour, date);
 	
 	char buffer[100];   // this stores the entire line read from the file
-	char info[25];   // this is used to hold the part we actually care about
 
 	// keep reading lines of the file until EOF
 	while(fgets(buffer, 100, fp) != NULL){
-		strncpy(info, buffer, 25);
-
 		// get the first field and put it into data->station
-		char *tok = strtok(info, ",");
+		char *tok = strtok(buffer, ",");
 		data->station = atoi(tok);
 		// get the second field and put it into data->date
 		tok = strtok(NULL, ",");
@@ -96,6 +93,13 @@ static int find_most_recent(struct CIMIS_data *data){
 		tok = strtok(NULL, ",");
 		tok = strtok(NULL, ",");
 		data->et0 = atof(tok);
+		// get the 13th field and put it into data->air_temp
+		for(int i = 0; i < 8; i++) { tok = strtok(NULL, ","); }
+		data->air_temp = atof(tok);
+		// get the 15th field and put it into data->humidity
+		tok = strtok(NULL, ",");
+		tok = strtok(NULL, ",");
+		data->humidity = atof(tok);
 		break;
 	}
 
@@ -154,8 +158,9 @@ int get_latest_data(struct CIMIS_data *data){
 
 int main(){
 	struct CIMIS_data d;
-	get_latest_data(&d);
-	printf("%d,%s,%d,%f\n", d.station, d.date, d.hour, d.et0);
+	if(get_latest_data(&d) == 0){
+		printf("%d,%s,%d,%f,%f,%f\n", d.station, d.date, d.hour, d.et0, d.air_temp, d.humidity);
+	}
 	return 0;
 }
 
