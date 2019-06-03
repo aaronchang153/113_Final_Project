@@ -8,12 +8,12 @@ LFLAGS=-lcurl
 %.o: %.cpp
 	$(CC) -o $@ $< $(CFLAGS)
 
+${EXEC}: main.o cimis.o
+	$(CC) -o ${EXEC} $^ $(LFLAGS)
+
 cimis_d:LFLAGS+=-Wall -g -DDEBUG
 cimis_d: cimis.cpp
 	$(CC) -o $@ $^ $(LFLAGS)
-
-${EXEC}: main.o cimis.o
-	$(CC) -o ${EXEC} $^ $(LFLAGS)
 
 clean:
 	rm -f ./${EXEC}
