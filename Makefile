@@ -2,15 +2,20 @@ EXEC=program
 
 CC=g++
 CFLAGS=-Wall -c
-LFLAGS=-Wall -lcurl
+LFLAGS=-lcurl
 
 
 %.o: %.cpp
-	$(CC) $< $(CFLAGS)
+	$(CC) -o $@ $< $(CFLAGS)
+
+cimis_d:LFLAGS+=-Wall -g -DDEBUG
+cimis_d: cimis.cpp
+	$(CC) -o $@ $^ $(LFLAGS)
 
 ${EXEC}: main.o cimis.o
 	$(CC) -o ${EXEC} $^ $(LFLAGS)
 
 clean:
-	rm ./${EXEC}
-	rm ./*.o
+	rm -f ./${EXEC}
+	rm -f ./cimis_d
+	rm -f ./*.o
