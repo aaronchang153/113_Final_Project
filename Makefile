@@ -9,7 +9,7 @@ LFLAGS=-lcurl
 	$(CC) -o $@ $< $(CFLAGS)
 
 ${EXEC}: main.o cimis.o
-	$(CC) -o ${EXEC} $^ $(LFLAGS)
+	$(CC) -o $@ $^ $(LFLAGS)
 
 cimis_d: CFLAGS+=-g -DDEBUG
 cimis_d: cimis.o
