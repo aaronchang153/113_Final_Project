@@ -20,7 +20,7 @@ cimis_d: cimis.o
 
 temp_and_humidity_d: CFLAGS+=-g -DDEBUG
 temp_and_humidity_d: temp_and_humidity.o
-        $(CC) -o $@ $^ $(LFLAGS)
+	$(CC) -o $@ $^ $(LFLAGS)
 clean:
 	rm -f ./${EXEC}
 	rm -f ./cimis_d
