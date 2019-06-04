@@ -8,6 +8,9 @@ LFLAGS=-lcurl
 %.o: %.cpp
 	$(CC) -o $@ $< $(CFLAGS)
 
+%.o: %.c
+	$(CC) -o $@ $< $(CFLAGS)
+
 ${EXEC}: main.o cimis.o temp_and_humidity.o
 	$(CC) -o $@ $^ $(LFLAGS)
 
