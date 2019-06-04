@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include "DHT.hpp"
+
 
 #define DHT11_Pin 0
 #define DHT_OK 0
