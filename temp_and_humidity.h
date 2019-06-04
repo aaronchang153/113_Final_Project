@@ -20,7 +20,7 @@
 class DHT
 {
 	public:
-		double humidiity, temp;
+		double humidity, temp;
 		int readDHT11(int pin);
 	private:
 		int bits[5]; //Buffer to read data

@@ -13,7 +13,7 @@ float getTemp()
 	}	
 
 	getSensor = sensor.readDHT11(DHT11_Pin);
-	switch(sensor)
+	switch(getSensor)
 	{
 		case DHT_OK:		//everything is good
 			printf("Correct Value\n");
@@ -24,7 +24,7 @@ float getTemp()
 		case DHT_ERROR_TIMEOUT:	//reading DHT times out
 			printf("DHT_ERROR_TIMEOUT\n");
 			break;
-		case DHT_INVALID_VALUE	//other errors
+		case DHT_INVALID_VALUE:	//other errors
 			printf("DHT_INVALID_VALUE");
 			break;
 	}
@@ -46,7 +46,7 @@ float getHumidity()
         }
 
         getSensor = sensor.readDHT11(DHT11_Pin);
-        switch(sensor)
+        switch(getSensor)
         {
                 case DHT_OK:            //everything is good
                         printf("Correct Value\n");
@@ -57,7 +57,7 @@ float getHumidity()
                 case DHT_ERROR_TIMEOUT: //reading DHT times out
                         printf("DHT_ERROR_TIMEOUT\n");
                         break;
-                case DHT_INVALID_VALUE  //other errors
+		case DHT_INVALID_VALUE:  //other errors
                         printf("DHT_INVALID_VALUE");
                         break;
         }
