@@ -18,6 +18,7 @@
 #define DHT_TIMEOUT 100
 
 
+/*
 class DHT
 {
 	public:
@@ -27,6 +28,7 @@ class DHT
 		int bits[5]; //Buffer to read data
 		int readSensor(int pin, int delay);
 };
+*/
 float getTemp();
 float getHumidity();
 

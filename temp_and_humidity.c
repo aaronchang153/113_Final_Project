@@ -29,7 +29,7 @@ float getTemp()
 			break;
 	}
 
-	return sensor.temp;
+	return sensor.temperature;
 }
 
 
