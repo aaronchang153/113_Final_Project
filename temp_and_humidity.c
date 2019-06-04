@@ -64,3 +64,15 @@ float getHumidity()
 
         return sensor.humidity;
 }
+
+#ifdef DEBUG
+int main()
+{
+	float temp, humidity;
+	temp = getTemp();
+	humidity = getHumidity();
+	printf("humidity: %.2f %%\ntemp: %.2f*C\n", temp, humidity);
+
+}
+
+#endif
