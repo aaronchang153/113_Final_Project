@@ -2,7 +2,7 @@ EXEC=program
 
 CC=g++
 CFLAGS=-Wall -c
-LFLAGS=-lcurl
+LFLAGS=-lcurl -lwiringPi
 
 
 %.o: %.cpp
