@@ -74,6 +74,7 @@ int main()
 		temp = getTemp();
 		humidity = getHumidity();
 		printf("humidity: %.2f %%\ntemp: %.2f*C\n", humidity, temp);
+		delay(1000);
 	}
 }
 
