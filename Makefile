@@ -22,6 +22,10 @@ temp_and_humidity_d: CFLAGS+=-g -DDEBUG
 temp_and_humidity_d: temp_and_humidity.o DHT.o
 	$(CC) -o $@ $^ $(LFLAGS)
 
+dht_d: CFLAGS+=-g -DDEBUG
+dht_d: DHT.o
+	$(CC) -o $@ $^ $(LFLAGS)
+
 motion_d: CFLAGS+=-g -DDEBUG
 motion_d: motion.o
 	$(CC) -o $@ $^ $(LFLAGS)
