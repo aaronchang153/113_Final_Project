@@ -5,7 +5,7 @@
 #include <time.h>
 #include <curl/curl.h>
 
-#define OUTFILE "recv/cimis_data.csv"
+#define OUTFILE "cimis_data.csv"
 
 
 // struct for the file to be recieved over FTP
