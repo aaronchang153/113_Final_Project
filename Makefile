@@ -11,7 +11,7 @@ LFLAGS=-lcurl -lwiringPi
 %.o: %.c
 	$(CC) -o $@ $< $(CFLAGS)
 
-${EXEC}: main.o cimis.o temp_and_humidity.o DHT.o motion.o
+${EXEC}: main.o cimis.o temp_and_humidity.o DHT.o motion.o relay.o
 	$(CC) -o $@ $^ $(LFLAGS)
 
 cimis_d: CFLAGS+=-g -DDEBUG
@@ -26,9 +26,14 @@ motion_d: CFLAGS+=-g -DDEBUG
 motion_d: motion.o
 	$(CC) -o $@ $^ $(LFLAGS)
 
+relay_d: CFLAGS+=-g -DDEBUG
+relay_d: relay.o
+	$(CC) -o $@ $^ $(LFLAGS)
+
 clean:
 	rm -f ./${EXEC}
 	rm -f ./cimis_d
+	rm -f ./relay_d
 	rm -f ./temp_and_humidity
 	rm -f ./motion_d
 	rm -f ./*.o

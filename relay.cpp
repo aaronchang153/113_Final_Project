@@ -27,3 +27,20 @@ int relayLoop(int detection, int time, int timeStalled){
      }
      return time;
 }
+
+#ifdef DEBUG
+int main()
+{
+  int time = 10;
+  int count = 10;
+	while(count>0)
+	{
+    count--;
+		time = relayLoop(0,time,0);
+		delay(2000);
+	}
+  printf("Test Program end.\n", );
+  return 0;
+}
+
+#endif
