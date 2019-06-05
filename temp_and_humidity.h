@@ -9,6 +9,7 @@
 
 
 #define DHT11_Pin 17
+/*
 #define DHT_OK 0
 #define DHT_ERROR_CHECK -1
 #define DHT_ERROR_TIMEOUT -2
@@ -16,7 +17,7 @@
 #define DHT_DHT11_WAKEUP 18
 #define DHT_WAKEUP 1
 #define DHT_TIMEOUT 100
-
+*/
 
 /*
 class DHT
