@@ -15,16 +15,16 @@ float getTemp()
 	getSensor = sensor.readDHT11(DHT11_Pin);
 	switch(getSensor)
 	{
-		case DHT_OK:		//everything is good
+		case DHTLIB_OK:		//everything is good
 			printf("Correct Value\n");
 			break;
-		case DHT_ERROR_CHECK:	//data check has errors
+		case DHTLIB_ERROR_CHECKSUM:	//data check has errors
 			printf("DHT_ERROR_CHECK\n");
 			break;
-		case DHT_ERROR_TIMEOUT:	//reading DHT times out
+		case DHTLIB_ERROR_TIMEOUT:	//reading DHT times out
 			printf("DHT_ERROR_TIMEOUT\n");
 			break;
-		case DHT_INVALID_VALUE:	//other errors
+		case DHTLIB_INVALID_VALUE:	//other errors
 			printf("DHT_INVALID_VALUE");
 			break;
 	}
@@ -48,16 +48,16 @@ float getHumidity()
         getSensor = sensor.readDHT11(DHT11_Pin);
         switch(getSensor)
         {
-                case DHT_OK:            //everything is good
+                case DHTLIB_OK:            //everything is good
                         printf("Correct Value\n");
                         break;
-                case DHT_ERROR_CHECK:   //data check has errors
+                case DHTLIB_ERROR_CHECKSUM:   //data check has errors
                         printf("DHT_ERROR_CHECK\n");
                         break;
-                case DHT_ERROR_TIMEOUT: //reading DHT times out
+                case DHTLIB_ERROR_TIMEOUT: //reading DHT times out
                         printf("DHT_ERROR_TIMEOUT\n");
                         break;
-		case DHT_INVALID_VALUE:  //other errors
+		case DHTLIB_INVALID_VALUE:  //other errors
                         printf("DHT_INVALID_VALUE");
                         break;
         }
