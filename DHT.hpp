@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#define DHT_PIN 0
+
 ////read return flag of sensor
 #define DHTLIB_OK               0
 #define DHTLIB_ERROR_CHECKSUM   -1
