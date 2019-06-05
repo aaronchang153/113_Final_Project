@@ -41,6 +41,7 @@ int main(){
 
 	/*** Call whatever additional setup is needed here ***/
 	relaySetup();
+	setupMotion();
 
 	et_index = 0;
 	et_count = 0;
