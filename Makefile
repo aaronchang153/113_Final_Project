@@ -3,7 +3,7 @@ EXEC=program
 CC=g++
 CFLAGS=-Wall -c
 LFLAGS=-lcurl -lwiringPi
-
+RFLAGS=-lwiringPi
 
 %.o: %.cpp
 	$(CC) -o $@ $< $(CFLAGS)
@@ -28,7 +28,7 @@ motion_d: motion.o
 
 relay_d: CFLAGS+=-g -DDEBUG
 relay_d: relay.o
-	$(CC) -o $@ $^ $(LFLAGS)
+	$(CC) -o $@ $^ $(RFLAGS)
 
 clean:
 	rm -f ./${EXEC}
