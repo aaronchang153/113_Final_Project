@@ -8,7 +8,7 @@
 #include "DHT.hpp"
 
 
-#define DHT11_Pin 0
+#define DHT11_Pin 17
 #define DHT_OK 0
 #define DHT_ERROR_CHECK -1
 #define DHT_ERROR_TIMEOUT -2
