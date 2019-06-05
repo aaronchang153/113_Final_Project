@@ -69,10 +69,12 @@ float getHumidity()
 int main()
 {
 	float temp, humidity;
-	temp = getTemp();
-	humidity = getHumidity();
-	printf("humidity: %.2f %%\ntemp: %.2f*C\n", humidity, temp);
-
+	while(1)
+	{
+		temp = getTemp();
+		humidity = getHumidity();
+		printf("humidity: %.2f %%\ntemp: %.2f*C\n", humidity, temp);
+	}
 }
 
 #endif
