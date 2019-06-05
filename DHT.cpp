@@ -84,4 +84,32 @@ int DHT::readDHT11(int pin){
 }
 
 
+#ifdef DEBUG
+
+int main(){
+	if(wiringPiSetup() == -1){
+		printf("Error calling wiringPiSetup\n");
+		return -1;
+	}
+
+	int chk;
+	DHT dht;
+
+	while(1){
+		chk = dht.readDHT11(DHT_PIN);
+
+		switch(chk){
+			case DHTLIB_OK:
+				printf("DHTLIB_OK\n");
+				break;
+			default:
+				printf("Error\n");
+		};
+
+		printf("Temperature: %lf\tHumidity: %lf\n", dht.temperature, dht.humidity);
+		delay(5000);
+	}
+}
+
+#endif // DEBUG
 
