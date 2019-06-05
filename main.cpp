@@ -108,12 +108,14 @@ void waterPlants(){
 	int detect;
 	int timeStalled = 0;
 
+	// water_time is the remaining number of milliseconds we need to water for
 	while(water_time > 0){
 		detect = getMotion();
 		tmp = relayLoop(detect, water_time, timeStalled);
 		if(water_time == tmp)
 			timeStalled++;
 		water_time = tmp;
+		delay(1); // wait a millisecond
 	}
 }
 
