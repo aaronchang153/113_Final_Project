@@ -1,10 +1,13 @@
 #include "motion.h"
 
+void setupMotion(){
+	pinMode(sensorPin, INPUT);
+}
+
 int getMotion()
 {
 	int motion;
 
-	pinMode(sensorPin, INPUT);
 	if(digitalRead(sensorPin) == HIGH)
 	{
 		motion = 1;
@@ -19,6 +22,7 @@ int getMotion()
 int main()
 {
 	int motion;
+	setupMotion();
 	while(1)
 	{
 		motion = getMotion();

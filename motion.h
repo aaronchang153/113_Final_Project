@@ -6,6 +6,8 @@
 
 #define sensorPin 7
 
+void setupMotion();
+
 int getMotion();
 
 #endif
