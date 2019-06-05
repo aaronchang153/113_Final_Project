@@ -38,6 +38,7 @@ clean:
 	rm -f ./${EXEC}
 	rm -f ./cimis_d
 	rm -f ./relay_d
-	rm -f ./temp_and_humidity
+	rm -f ./temp_and_humidity_d
+	rm -f ./dht_d
 	rm -f ./motion_d
 	rm -f ./*.o
