@@ -43,7 +43,7 @@ clean:
 	rm -f ./cimis_d
 	rm -f ./relay_d
 	rm -f ./temp_and_humidity_d
- 	rm -f ./LCD
+	rm -f ./LCD
 	rm -f ./dht_d
 	rm -f ./motion_d
 	rm -f ./*.o
