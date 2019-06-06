@@ -1,10 +1,6 @@
 #include "LCD.h"
 
-void lcdDisplayInfo(double local_temp, double local_humidity,
-					double cimis_temp, double cimis_humidity,
-					double local_et, double cimis_et,
-					double water_savings){
-
+void setupLCD(){
     int i;
     pcf8574Setup(BASE,pcf8574_address);// initialize PCF8574
     for(i=0;i<8;i++){
@@ -19,7 +15,13 @@ void lcdDisplayInfo(double local_temp, double local_humidity,
         printf("lcdInit failed !");
         return;
     }
-    
+}
+
+void lcdDisplayInfo(double local_temp, double local_humidity,
+					double cimis_temp, double cimis_humidity,
+					double local_et, double cimis_et,
+					double water_savings){
+
     while(1){
         lcdPosition(lcdhd,0,0);     // set the LCD cursor position to (0,0) 
         lcdPrintf(lcdhd,"local_temp:%.2fF  local_humidity:%.2f  local_et:%.2f  water_savings:%.2f",local_temp, local_humidity, local_et, water_savings);// Display Local values on LCD
@@ -31,7 +33,7 @@ void lcdDisplayInfo(double local_temp, double local_humidity,
     }
 }
 
-/*
+#ifdef DEBUG
 
 //main function for testing purpose
 
@@ -47,8 +49,11 @@ int main(void){
     cimis_et = 11.10;
     water_savings = 40.45;
 
+	setupLCD();
     lcdDisplayInfo( local_temp, local_humidity, cimis_temp, cimis_humidity, local_et, cimis_et, water_savings);
     
     return 0;
 }
-*/
+
+#endif // DEBUG
+
