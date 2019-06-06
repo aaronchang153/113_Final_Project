@@ -1,6 +1,12 @@
 #ifndef LCD_H
 #define LCD_H
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <wiringPi.h>
+#include <pcf8574.h>
+#include <lcd.h>
+#include <time.h>
 
 // setup pins and I2C stuff
 void setupLCD();
