@@ -15,13 +15,17 @@ void lcdDisplayInfo(double local_temp, double local_humidity,
     
     lcdhd = lcdInit(2,16,4,RS,EN,D4,D5,D6,D7,0,0,0,0);// initialize LCD and return “handle” used to handle LCD
     
+    if(lcdhd == -1){
+        printf("lcdInit failed !");
+        return;
+    }
     
     while(1){
         lcdPosition(lcdhd,0,0);     // set the LCD cursor position to (0,0) 
-        lcdPrintf(lcdhd,"local_temp:%.2fC  local_humidity:%.2fC  local_et:%.2fC  water_savings:%.2fC",local_temp, local_humidity, local_et, water_savings);// Display Local values on LCD
+        lcdPrintf(lcdhd,"local_temp:%.2fF  local_humidity:%.2f  local_et:%.2f  water_savings:%.2f",local_temp, local_humidity, local_et, water_savings);// Display Local values on LCD
         
         lcdPosition(lcdhd,0,1);     // set the LCD cursor position to (0,1) 
-        lcdPrintf(lcdhd,"cimis_temp:%.2fC  cimis_humidity:%.2fC  cimis_et:%.2fC  water_savings:%.2fC",cimis_temp, cimis_humidity, cimis_et, water_savings);// Display CIMIS values on LCD
+        lcdPrintf(lcdhd,"cimis_temp:%.2fF  cimis_humidity:%.2f  cimis_et:%.2f  water_savings:%.2f",cimis_temp, cimis_humidity, cimis_et, water_savings);// Display CIMIS values on LCD
         
         delay(1000);
     }
