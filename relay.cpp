@@ -59,7 +59,7 @@ int main()
 	}
   relayOff();
   printf("Relay State: %d\n", relayCheckState());
-  printf("Test Program end.\n", );
+  printf("Test Program end.\n");
   return 0;
 }
 
