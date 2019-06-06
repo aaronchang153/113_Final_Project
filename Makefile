@@ -2,8 +2,7 @@ EXEC=program
 
 CC=g++
 CFLAGS=-Wall -c
-LFLAGS=-lcurl -lwiringPi
-RFLAGS=-lwiringPi
+LFLAGS=-lcurl -lwiringPi -lwiringPiDev
 
 %.o: %.cpp
 	$(CC) -o $@ $< $(CFLAGS)
@@ -11,7 +10,7 @@ RFLAGS=-lwiringPi
 %.o: %.c
 	$(CC) -o $@ $< $(CFLAGS)
 
-${EXEC}: main.o cimis.o temp_and_humidity.o DHT.o motion.o relay.o LCD.o
+${EXEC}: main.o cimis.o DHT.o motion.o relay.o LCD.o
 	$(CC) -o $@ $^ $(LFLAGS)
 
 cimis_d: CFLAGS+=-g -DDEBUG
@@ -36,7 +35,7 @@ motion_d: motion.o
 
 relay_d: CFLAGS+=-g -DDEBUG
 relay_d: relay.o
-	$(CC) -o $@ $^ $(RFLAGS)
+	$(CC) -o $@ $^ $(LFLAGS)
 
 clean:
 	rm -f ./${EXEC}
