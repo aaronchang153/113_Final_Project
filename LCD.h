@@ -24,9 +24,12 @@ void setupLCD();
 void cleanupLCD();
 
 // temperature in Fahrenheit, humidity in %, water_savings in gallons
-void lcdDisplayInfo(double local_temp, double local_humidity,
+void lcdUpdateInfo(double local_temp, double local_humidity,
 					double cimis_temp, double cimis_humidity,
 					double local_et, double cimis_et,
 					double water_savings);
+
+// thread function to constantly display info from lcdUpdateInfo
+void *lcdDisplayInfo(void *args);
 
 #endif // LCD_H
