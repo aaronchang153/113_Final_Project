@@ -70,8 +70,8 @@ void lcdUpdateInfo(double local_temp, double local_humidity,
 
 	pthread_mutex_lock(&mutex);
 	// copy formatted strings into each string variable
-	sprintf(cimis_str,"CIMIS: Temp:%.1fF, Humidity:%.1f%%,ET:%.1f",cimis_temp, cimis_humidity, cimis_et);
-	sprintf(local_str,"Local: Temp:%.1fF, Humidity:%.1f%%,ET:%.1f, Water Savings:%.1f",local_temp, local_humidity, local_et, water_savings);
+	sprintf(cimis_str,"CIMIS: Temp:%.2fF, Humidity:%.2f%%,ET:%.2f",cimis_temp, cimis_humidity, cimis_et);
+	sprintf(local_str,"Local: Temp:%.2fF, Humidity:%.2f%%,ET:%.2f, Water Savings:%.1f",local_temp, local_humidity, local_et, water_savings);
 
 	local_len = strlen(local_str);
 	cimis_len = strlen(cimis_str);
