@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <wiringPi.h>
 #include <pthread.h>
+#include <signal.h>
 #include "cimis.h"
 #include "temp_and_humidity.h"
 #include "DHT.hpp"
@@ -24,11 +25,15 @@
 
 int global_run_lcd;
 
-static double et_local[3];
-static int et_index;
-static int et_count;
+double et_local[3];
+int et_index;
+int et_count;
 
-static struct CIMIS_data cimis_data;
+struct CIMIS_data cimis_data;
+
+int running;
+
+void handle_sigint(int sig) { running = 0; }
 
 
 void hourlyCheck(double temp, double humidity);
@@ -75,7 +80,10 @@ int main(){
 	pthread_t lcd_tid;
 	pthread_create(&lcd_tid, NULL, lcdDisplayInfo, NULL);
 
-	for(;;){
+	signal(SIGINT, handle_sigint);
+
+	running = 1;
+	while(running){
 		counter = (counter + 1) % 60;
 
 		dht.readDHT11(DHT_PIN);
@@ -106,6 +114,12 @@ int main(){
 
 		delay(WAIT_TIME); // 1 minute delay
 	}
+
+	printf("\nExiting...\n");
+
+	global_run_lcd = 0;
+	pthread_join(lcd_tid, NULL);
+	cleanupLCD();
 
 	return 0;
 }
