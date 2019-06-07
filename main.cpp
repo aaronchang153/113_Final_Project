@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <wiringPi.h>
+#include <pthread.h>
 #include "cimis.h"
 #include "temp_and_humidity.h"
 #include "DHT.hpp"
 #include "relay.h"
 #include "motion.h"
+#include "LCD.h"
 
 
 #define AREA           200 // square feet
@@ -18,13 +20,21 @@
 // input seconds, gives milliseconds
 #define SECONDS(x) ((x) * 1000)
 
+#define WAIT_TIME 60000 //milliseconds
+
+int global_run_lcd;
+
 static double et_local[3];
 static int et_index;
 static int et_count;
 
+static struct CIMIS_data cimis_data;
+
 
 void hourlyCheck(double temp, double humidity);
 void waterPlants();
+
+static inline double C_to_F(double temp_C) { return (temp_C * (9.0 / 5.0)) + 32.0; }
 
 static double avgET(){
 	double avg = 0.0l;
@@ -42,6 +52,9 @@ int main(){
 	/*** Call whatever additional setup is needed here ***/
 	relaySetup();
 	setupMotion();
+	setupLCD();
+
+	global_run_lcd = 1;
 
 	et_index = 0;
 	et_count = 0;
@@ -59,6 +72,9 @@ int main(){
 	// used to track when an hour has passed
 	int counter = 59; // starts at 59 so the first iteration of the loop sets it to 0
 
+	pthread_t lcd_tid;
+	pthread_create(&lcd_tid, NULL, lcdDisplayInfo, NULL);
+
 	for(;;){
 		counter = (counter + 1) % 60;
 
@@ -75,22 +91,26 @@ int main(){
 			avg_humidity /= 60.0l;
 		}
 
-		hourlyCheck(avg_temp, avg_humidity);
+		if(counter == 0){
+			hourlyCheck(avg_temp, avg_humidity);
 
-		waterPlants();
+			waterPlants();
 
-		avg_temp = 0.0l;
-		avg_humidity = 0.0l;
+			avg_temp = 0.0l;
+			avg_humidity = 0.0l;
+		}
 
-		delay(SECONDS(60)); // 1 minute delay
+		lcdUpdateInfo(C_to_F(dht.temperature), dht.humidity,
+				cimis_data.air_temp, cimis_data.humidity,
+				et_local[et_index], cimis_data.et0, 0);
+
+		delay(WAIT_TIME); // 1 minute delay
 	}
 
 	return 0;
 }
 
 void hourlyCheck(double temp, double humidity){
-	struct CIMIS_data cimis_data;
-
 	// if we successfully get the latest data from CIMIS
 	if(get_latest_data(&cimis_data) == 0){
 		double et = cimis_data.et0 * (temp / cimis_data.air_temp) * (cimis_data.humidity / humidity);
