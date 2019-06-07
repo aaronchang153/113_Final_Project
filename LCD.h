@@ -1,13 +1,6 @@
 #ifndef LCD_H
 #define LCD_H
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <wiringPi.h>
-#include <pcf8574.h>
-#include <lcd.h>
-#include <time.h>
-
 
 #define pcf8574_address 0x27        // default I2C address of Pcf8574
 //#define pcf8574_address 0x3F        // default I2C address of Pcf8574A
@@ -24,11 +17,11 @@
 
 #define delay_speed 1
 
-int lcdhd;// used to handle LCD
-
 
 // setup pins and I2C stuff
 void setupLCD();
+
+void cleanupLCD();
 
 // temperature in Fahrenheit, humidity in %, water_savings in gallons
 void lcdDisplayInfo(double local_temp, double local_humidity,
