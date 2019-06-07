@@ -2,7 +2,7 @@ EXEC=program
 
 CC=g++
 CFLAGS=-Wall -c
-LFLAGS=-lcurl -lwiringPi -lwiringPiDev
+LFLAGS=-lcurl -lpthread -lwiringPi -lwiringPiDev
 
 %.o: %.cpp
 	$(CC) -o $@ $< $(CFLAGS)
