@@ -23,18 +23,22 @@
 
 #define WAIT_TIME 60000 //milliseconds
 
+// global flag for when the lcd display thread should stop
 int global_run_lcd;
 
+// the most recent local ET and cimis data
 double et_local;
-
 struct CIMIS_data cimis_data;
 
 double water_saved;
 
+// gets set to 0 on Ctrl-C
 int running;
 
+// signal handler for SIGINT (i.e. Ctrl-C)
 void handle_sigint(int sig) { running = 0; }
 
+// gets data from CIMIS and updates the most recent data (from above)
 void hourlyCheck(double temp, double humidity);
 void waterPlants();
 
@@ -66,14 +70,17 @@ int main(){
 	// used to track when an hour has passed
 	int counter = 59; // starts at 59 so the first iteration of the loop sets it to 0
 
+	// so that the lcd display thread can actually run
 	global_run_lcd = 1;
 
+	// start lcd display thread
 	pthread_t lcd_tid;
 	pthread_create(&lcd_tid, NULL, lcdDisplayInfo, NULL);
 
-	signal(SIGINT, handle_sigint);
-
 	lcdUpdateStatus(LCD_STATUS_IDLE);
+
+	// call handle_sigint on SIGINT signal
+	signal(SIGINT, handle_sigint);
 
 	running = 1;
 	while(running){
@@ -83,6 +90,7 @@ int main(){
 		while(dht.readDHT11(DHT_PIN) != DHTLIB_OK)
 			delay(2000);
 
+		// accumulate temp and humidity readings over the hour
 		avg_temp += dht.temperature;
 		avg_humidity += dht.humidity;
 		
@@ -90,23 +98,29 @@ int main(){
 			first_run = 0;
 		}
 		else{
+			// divide total temp and humidity at the end of the hour to get average
 			avg_temp /= 60.0l;
 			avg_humidity /= 60.0l;
 		}
 
+		// after one hour, do this
 		if(counter == 0){
+			// update cimis data and local ET
 			hourlyCheck(C_to_F(avg_temp), avg_humidity);
 
+			// give the LCD all the new data
 			lcdUpdateInfo(C_to_F(dht.temperature), dht.humidity,
 					cimis_data.air_temp, cimis_data.humidity,
 					et_local, cimis_data.et0, water_saved);
 
 			waterPlants();
 
+			// reset temp and humidity accumulators
 			avg_temp = 0.0l;
 			avg_humidity = 0.0l;
 		}
 		else{
+			// give LCD new data (namely, local temp and humidity)
 			lcdUpdateInfo(C_to_F(dht.temperature), dht.humidity,
 					cimis_data.air_temp, cimis_data.humidity,
 					et_local, cimis_data.et0, water_saved);
@@ -136,7 +150,7 @@ void hourlyCheck(double temp, double humidity){
 void waterPlants(){
 	double amount = WATER_AMT(et_local); // gallons per day
 	int water_time = SECONDS((3600 * amount) / (24 * WATER_RATE));
-	int tmp;
+	int tmp; // used to store return value from relayLoop
 	int detect;
 	int timeStalled = 0;
 
@@ -145,6 +159,7 @@ void waterPlants(){
 	// water_time is the remaining number of milliseconds we need to water for
 	while(water_time > 0){
 		detect = getMotion();
+		// relayLoop returns the remaining time after it's done with what it's doing
 		tmp = relayLoop(detect, water_time, timeStalled);
 		if(water_time == tmp){
 			lcdUpdateStatus(LCD_STATUS_MOTION);
