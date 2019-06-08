@@ -25,28 +25,20 @@
 
 int global_run_lcd;
 
-double et_local[3];
-int et_index;
-int et_count;
+double et_local;
 
 struct CIMIS_data cimis_data;
+
+double water_saved;
 
 int running;
 
 void handle_sigint(int sig) { running = 0; }
 
-
 void hourlyCheck(double temp, double humidity);
 void waterPlants();
 
 static inline double C_to_F(double temp_C) { return (temp_C * (9.0 / 5.0)) + 32.0; }
-
-static double avgET(){
-	double avg = 0.0l;
-	for(int i = 0; i < et_count; i++)
-		avg += et_local[i];
-	return avg / (double) et_count;
-}
 
 int main(){
 	if(wiringPiSetup() == -1){
@@ -59,10 +51,7 @@ int main(){
 	setupMotion();
 	setupLCD();
 
-	global_run_lcd = 1;
-
-	et_index = 0;
-	et_count = 0;
+	water_saved = 0.0l;
 
 	DHT dht;
 
@@ -77,16 +66,22 @@ int main(){
 	// used to track when an hour has passed
 	int counter = 59; // starts at 59 so the first iteration of the loop sets it to 0
 
+	global_run_lcd = 1;
+
 	pthread_t lcd_tid;
 	pthread_create(&lcd_tid, NULL, lcdDisplayInfo, NULL);
 
 	signal(SIGINT, handle_sigint);
 
+	lcdUpdateStatus(LCD_STATUS_IDLE);
+
 	running = 1;
 	while(running){
 		counter = (counter + 1) % 60;
 
-		dht.readDHT11(DHT_PIN);
+		// read temp+humidity every 2 seconds until we get a good reading
+		while(dht.readDHT11(DHT_PIN) != DHTLIB_OK)
+			delay(2000);
 
 		avg_temp += dht.temperature;
 		avg_humidity += dht.humidity;
@@ -100,17 +95,22 @@ int main(){
 		}
 
 		if(counter == 0){
-			hourlyCheck(avg_temp, avg_humidity);
+			hourlyCheck(C_to_F(avg_temp), avg_humidity);
+
+			lcdUpdateInfo(C_to_F(dht.temperature), dht.humidity,
+					cimis_data.air_temp, cimis_data.humidity,
+					et_local, cimis_data.et0, water_saved);
 
 			waterPlants();
 
 			avg_temp = 0.0l;
 			avg_humidity = 0.0l;
 		}
-
-		lcdUpdateInfo(C_to_F(dht.temperature), dht.humidity,
-				cimis_data.air_temp, cimis_data.humidity,
-				et_local[et_index], cimis_data.et0, 0);
+		else{
+			lcdUpdateInfo(C_to_F(dht.temperature), dht.humidity,
+					cimis_data.air_temp, cimis_data.humidity,
+					et_local, cimis_data.et0, water_saved);
+		}
 
 		delay(WAIT_TIME); // 1 minute delay
 	}
@@ -120,6 +120,7 @@ int main(){
 	global_run_lcd = 0;
 	pthread_join(lcd_tid, NULL);
 	cleanupLCD();
+	relayOff();
 
 	return 0;
 }
@@ -128,28 +129,38 @@ void hourlyCheck(double temp, double humidity){
 	// if we successfully get the latest data from CIMIS
 	if(get_latest_data(&cimis_data) == 0){
 		double et = cimis_data.et0 * (temp / cimis_data.air_temp) * (cimis_data.humidity / humidity);
-		et_index = (et_index + 1) % 3;
-		et_local[et_index] = et;
-		if(et_count < 3)
-			et_count++;
+		et_local = et;
 	}
 }
 
 void waterPlants(){
-	double amount = WATER_AMT(avgET()); // gallons per day
+	double amount = WATER_AMT(et_local); // gallons per day
 	int water_time = SECONDS((3600 * amount) / (24 * WATER_RATE));
 	int tmp;
 	int detect;
 	int timeStalled = 0;
 
+	lcdUpdateStatus(LCD_STATUS_WATERING);
+
 	// water_time is the remaining number of milliseconds we need to water for
 	while(water_time > 0){
 		detect = getMotion();
 		tmp = relayLoop(detect, water_time, timeStalled);
-		if(water_time == tmp)
+		if(water_time == tmp){
+			lcdUpdateStatus(LCD_STATUS_MOTION);
 			timeStalled++;
+		}
+		else{
+			lcdUpdateStatus(LCD_STATUS_WATERING);
+		}
 		water_time = tmp;
 		delay(1); // wait a millisecond
 	}
+	relayOff();
+
+	lcdUpdateStatus(LCD_STATUS_IDLE);
+
+	// calculation is (gallons per day) / (24 hours) to get gallons of water used for this hour
+	water_saved += ((WATER_AMT(cimis_data.et0) - amount) / 24);
 }
 
