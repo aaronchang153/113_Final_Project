@@ -17,11 +17,17 @@
 
 #define delay_speed 1
 
+#define LCD_STATUS_IDLE      0
+#define LCD_STATUS_WATERING  1
+#define LCD_STATUS_MOTION    2
+
 
 // setup pins and I2C stuff
 void setupLCD();
 
 void cleanupLCD();
+
+void lcdUpdateStatus(int status);
 
 // temperature in Fahrenheit, humidity in %, water_savings in gallons
 void lcdUpdateInfo(double local_temp, double local_humidity,
