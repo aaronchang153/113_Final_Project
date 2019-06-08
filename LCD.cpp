@@ -22,7 +22,7 @@ extern int global_run_lcd;
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 // the strings to be displayed on the LCD
-char status_str[50];
+char status_str[DISPLAY_LEN + 1];
 char info_str[200];
 
 // length of each string to be displayed
@@ -82,7 +82,7 @@ void lcdUpdateStatus(int status){
 			sprintf(status_str, "Watering");
 			break;
 		case LCD_STATUS_MOTION:
-			sprintf(status_str, "Motion Detected: Pausing");
+			sprintf(status_str, "Motion Detected");
 			break;
 		default:
 			// should never get here. if it does, there's a problem elsewhere
@@ -117,33 +117,25 @@ void *lcdDisplayInfo(void *args){
 	char status_buffer[DISPLAY_LEN + 1];
 	char info_buffer[DISPLAY_LEN + 1];
 
-	// current position in their respective strings
-	int status_pos = 0;
+	// current position in status string
 	int info_pos = 0;
 
 	// counters to know how many times the display has shifted
 	// reset display once this reaches a certain number
-	int status_counter = 0;
 	int info_counter = 0;
 
 	while(global_run_lcd){
 		pthread_mutex_lock(&mutex);
 
 		// copy n characters from strings to buffers
-		strncpy(status_buffer, status_str + status_pos, DISPLAY_LEN);
+		strncpy(status_buffer, status_str, DISPLAY_LEN);
 		strncpy(info_buffer, info_str + info_pos, DISPLAY_LEN);
 
 		// if we're not at the end of either string, increment current position
-		if(status_pos < status_len - DISPLAY_LEN)
-			status_pos++;
 		if(info_pos < info_len - DISPLAY_LEN)
 			info_pos++;
 
 		// once we've scrolled long enough, reset the positions to 0
-		if(++status_counter >= status_len - DISPLAY_LEN + 2){
-			status_pos = 0;
-			status_counter = 0;
-		}
 		if(++info_counter >= info_len - DISPLAY_LEN + 2){
 			info_pos = 0;
 			info_counter = 0;
