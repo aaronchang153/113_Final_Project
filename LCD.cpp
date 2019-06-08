@@ -19,13 +19,15 @@ extern int global_run_lcd;
 
 #define DISPLAY_LEN 16
 
-// the entire strings to be displayed on the LCD
-char local_str[100];
-char cimis_str[100];
+#define MIN(a,b) (((a)<(b))?(a):(b))
 
-// length of each string and the current position in each string to be displayed
-int local_len;
-int cimis_len;
+// the strings to be displayed on the LCD
+char status_str[50];
+char info_str[200];
+
+// length of each string to be displayed
+int status_len;
+int info_len;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -47,8 +49,10 @@ void setupLCD(){
         return;
     }
 
-    local_len = 0;
-    cimis_len = 0;
+	status_len = 0;
+	info_len = 0;
+
+	lcdClear(lcdhd);
 }
 
 void cleanupLCD(){
@@ -56,11 +60,38 @@ void cleanupLCD(){
 }
 
 // lcdPrintf and lcdPuts don't wan't to cooperate with long strings so here's a small solution
-static void displayString(int x, int y, char *str){
+static void displayString(int x, int y, char *str, int len){
 	lcdPosition(lcdhd, x, y);
-	for(int i = 0; i < DISPLAY_LEN; i++){
+	int i;
+	for(i = 0; i < len; i++)
 		lcdPutchar(lcdhd, str[i]);
-	}
+
+	// if there's still room left on the display, fill the rest of it with spaces
+	while(i++ < DISPLAY_LEN)
+		lcdPutchar(lcdhd, ' ');
+}
+
+void lcdUpdateStatus(int status){
+	pthread_mutex_lock(&mutex);
+
+	switch(status){
+		case LCD_STATUS_IDLE:
+			sprintf(status_str, "Idle");
+			break;
+		case LCD_STATUS_WATERING:
+			sprintf(status_str, "Watering");
+			break;
+		case LCD_STATUS_MOTION:
+			sprintf(status_str, "Motion Detected: Pausing");
+			break;
+		default:
+			// should never get here. if it does, there's a problem elsewhere
+			sprintf(status_str, "INVALID STATUS");
+	};
+
+	status_len = strlen(status_str);
+
+	pthread_mutex_unlock(&mutex);
 }
 
 void lcdUpdateInfo(double local_temp, double local_humidity,
@@ -69,12 +100,12 @@ void lcdUpdateInfo(double local_temp, double local_humidity,
 					double water_savings){
 
 	pthread_mutex_lock(&mutex);
-	// copy formatted strings into each string variable
-	sprintf(cimis_str,"CIMIS: Temp:%.2fF, Humidity:%.2f%%,ET:%.2f",cimis_temp, cimis_humidity, cimis_et);
-	sprintf(local_str,"Local: Temp:%.2fF, Humidity:%.2f%%,ET:%.2f, Water Savings:%.1f",local_temp, local_humidity, local_et, water_savings);
 
-	local_len = strlen(local_str);
-	cimis_len = strlen(cimis_str);
+	sprintf(info_str,"Temp:(CIMIS:%.2fF|Local:%.2fF);Humidity:(CIMIS:%.2f%%|Local:%.2f%%);ET:(CIMIS:%.2f|Local:%.2f);Water Savings:%.1f",
+			cimis_temp, local_temp, cimis_humidity, local_humidity,
+			cimis_et, local_et, water_savings);
+
+	info_len = strlen(info_str);
 
 	pthread_mutex_unlock(&mutex);
 }
@@ -83,40 +114,45 @@ void lcdUpdateInfo(double local_temp, double local_humidity,
 void *lcdDisplayInfo(void *args){
 
 	// buffers for what should currently be displayed on the LCD
-	char local_buffer[DISPLAY_LEN + 1];
-	char cimis_buffer[DISPLAY_LEN + 1];
+	char status_buffer[DISPLAY_LEN + 1];
+	char info_buffer[DISPLAY_LEN + 1];
 
-	int local_pos = 0;
-	int cimis_pos = 0;
+	// current position in their respective strings
+	int status_pos = 0;
+	int info_pos = 0;
 
-	// counter to know how many times the display has shifted
+	// counters to know how many times the display has shifted
 	// reset display once this reaches a certain number
-	int counter = 0;
+	int status_counter = 0;
+	int info_counter = 0;
 
 	while(global_run_lcd){
 		pthread_mutex_lock(&mutex);
 
 		// copy n characters from strings to buffers
-		strncpy(cimis_buffer, cimis_str + cimis_pos, DISPLAY_LEN);
-		strncpy(local_buffer, local_str + local_pos, DISPLAY_LEN);
+		strncpy(status_buffer, status_str + status_pos, DISPLAY_LEN);
+		strncpy(info_buffer, info_str + info_pos, DISPLAY_LEN);
 
 		// if we're not at the end of either string, increment current position
-		if(local_pos < local_len - DISPLAY_LEN)
-			local_pos++;
-		if(cimis_pos < cimis_len - DISPLAY_LEN)
-			cimis_pos++;
+		if(status_pos < status_len - DISPLAY_LEN)
+			status_pos++;
+		if(info_pos < info_len - DISPLAY_LEN)
+			info_pos++;
 
 		// once we've scrolled long enough, reset the positions to 0
-		if(++counter >= local_len - DISPLAY_LEN + 2){
-			local_pos = 0;
-			cimis_pos = 0;
-			counter = 0;
+		if(++status_counter >= status_len - DISPLAY_LEN + 2){
+			status_pos = 0;
+			status_counter = 0;
+		}
+		if(++info_counter >= info_len - DISPLAY_LEN + 2){
+			info_pos = 0;
+			info_counter = 0;
 		}
 
 		pthread_mutex_unlock(&mutex);
 
-		displayString(0, 0, cimis_buffer);// set cursor position to (1,0) and display CIMIS info on LCD
-		displayString(0, 1, local_buffer);// set cursor position to (0,0) and display local info on LCD
+		displayString(0, 0, status_buffer, MIN(status_len, DISPLAY_LEN)); // set cursor position to (0,0) and display status on LCD
+		displayString(0, 1, info_buffer, DISPLAY_LEN); // set cursor position to (0,1) and display info on LCD
 
 		delay(500);
 	}
@@ -141,6 +177,7 @@ int main(void){
     water_savings = 40.45;
 
 	setupLCD();
+	lcdUpdateStatus(LCD_STATUS_IDLE);
     lcdUpdateInfo( local_temp, local_humidity, cimis_temp, cimis_humidity, local_et, cimis_et, water_savings);
     lcdDisplayInfo(NULL);
     
