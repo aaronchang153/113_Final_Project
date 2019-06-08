@@ -51,6 +51,7 @@ int main(){
 	}
 
 	/*** Call whatever additional setup is needed here ***/
+	printf("Initializing devices.\n");
 	relaySetup();
 	setupMotion();
 	setupLCD();
@@ -62,10 +63,6 @@ int main(){
 	double avg_temp = 0.0l;
 	double avg_humidity = 0.0l;
 
-	// just a flag to know when the for loop is doing its first run
-	// used to properly calculate average temp+humidity
-	char first_run = 1;
-
 	// counts between 0 and 59, gets incremented eveytime local temp + humidity is checked
 	// used to track when an hour has passed
 	int counter = 59; // starts at 59 so the first iteration of the loop sets it to 0
@@ -73,6 +70,7 @@ int main(){
 	// so that the lcd display thread can actually run
 	global_run_lcd = 1;
 
+	printf("Starting LCD.\n");
 	// start lcd display thread
 	pthread_t lcd_tid;
 	pthread_create(&lcd_tid, NULL, lcdDisplayInfo, NULL);
@@ -82,6 +80,10 @@ int main(){
 	// call handle_sigint on SIGINT signal
 	signal(SIGINT, handle_sigint);
 
+	// counter so we know what to divide by to get average
+	int local_count = 0;
+
+	printf("Entering main loop.\n");
 	running = 1;
 	while(running){
 		counter = (counter + 1) % 60;
@@ -90,23 +92,22 @@ int main(){
 		while(dht.readDHT11(DHT_PIN) != DHTLIB_OK)
 			delay(2000);
 
+		printf("Local Temperature: %.2f F\t Humidity: %.2f%%\n", dht.temperature, dht.humidity);
 		// accumulate temp and humidity readings over the hour
 		avg_temp += dht.temperature;
 		avg_humidity += dht.humidity;
-		
-		if(first_run){
-			first_run = 0;
-		}
-		else{
-			// divide total temp and humidity at the end of the hour to get average
-			avg_temp /= 60.0l;
-			avg_humidity /= 60.0l;
-		}
+
+		local_count++;
 
 		// after one hour, do this
 		if(counter == 0){
+			avg_temp /= (double) local_count;
+			avg_humidity  /= (double) local_count;
+
+			printf("Getting CIMIS data.\n");
 			// update cimis data and local ET
 			hourlyCheck(C_to_F(avg_temp), avg_humidity);
+			printf("CIMIS Temperature: %.2f F\t Humidity: %.2f%%\n", cimis_data.air_temp, cimis_data.humidity);
 
 			// give the LCD all the new data
 			lcdUpdateInfo(C_to_F(dht.temperature), dht.humidity,
@@ -118,6 +119,7 @@ int main(){
 			// reset temp and humidity accumulators
 			avg_temp = 0.0l;
 			avg_humidity = 0.0l;
+			local_count = 0;
 		}
 		else{
 			// give LCD new data (namely, local temp and humidity)
@@ -154,6 +156,8 @@ void waterPlants(){
 	int detect;
 	int timeStalled = 0;
 
+	printf("Watering plants for %.2f seconds.\n", (float) water_time / 1000.0);
+
 	lcdUpdateStatus(LCD_STATUS_WATERING);
 
 	// water_time is the remaining number of milliseconds we need to water for
@@ -172,6 +176,8 @@ void waterPlants(){
 		delay(1); // wait a millisecond
 	}
 	relayOff();
+
+	printf("Done watering.\n");
 
 	lcdUpdateStatus(LCD_STATUS_IDLE);
 
