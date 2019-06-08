@@ -148,7 +148,7 @@ void hourlyCheck(double temp, double humidity){
 }
 
 void waterPlants(){
-	double amount = WATER_AMT(et_local); // gallons per day
+	double amount = WATER_AMT(et_local * 24); // gallons per day
 	int water_time = SECONDS((3600 * amount) / (24 * WATER_RATE));
 	int tmp; // used to store return value from relayLoop
 	int detect;
@@ -157,7 +157,7 @@ void waterPlants(){
 	lcdUpdateStatus(LCD_STATUS_WATERING);
 
 	// water_time is the remaining number of milliseconds we need to water for
-	while(water_time > 0){
+	while(water_time > 0 && running){
 		detect = getMotion();
 		// relayLoop returns the remaining time after it's done with what it's doing
 		tmp = relayLoop(detect, water_time, timeStalled);
@@ -176,6 +176,6 @@ void waterPlants(){
 	lcdUpdateStatus(LCD_STATUS_IDLE);
 
 	// calculation is (gallons per day) / (24 hours) to get gallons of water used for this hour
-	water_saved += ((WATER_AMT(cimis_data.et0) - amount) / 24);
+	water_saved += ((WATER_AMT(cimis_data.et0 * 24) - amount) / 24);
 }
 
