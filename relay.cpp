@@ -25,12 +25,12 @@ int  relayCheckState(void){
 }
 int relayLoop(int detection, int time, int timeStalled){
      if ((detection == 0) || (timeStalled > longestWaitTime)){
-          printf("Sprinkling...\n");
+          //printf("Sprinkling...\n");
           time--;
           relayOn();
      }
      else if((detection == 1) && (timeStalled <= longestWaitTime)){
-          printf("Movement Detected, Turning OFF\n");
+          //printf("Movement Detected, Turning OFF\n");
           relayOff();
      }
      return time;
