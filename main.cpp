@@ -2,6 +2,7 @@
 #include <wiringPi.h>
 #include <pthread.h>
 #include <signal.h>
+#include <time.h>
 #include "cimis.h"
 #include "temp_and_humidity.h"
 #include "DHT.hpp"
@@ -23,10 +24,14 @@
 
 #define WAIT_TIME 60000 //milliseconds
 
+#define LOG_FILE "temp_log.csv"
+
 // global flag for when the lcd display thread should stop
 int global_run_lcd;
 
 // the most recent local ET and cimis data
+double avg_temp;
+double avg_humidity;
 double et_local;
 struct CIMIS_data cimis_data;
 
@@ -37,6 +42,8 @@ int running;
 
 // signal handler for SIGINT (i.e. Ctrl-C)
 void handle_sigint(int sig) { running = 0; }
+
+void printLog(double savings);
 
 // gets data from CIMIS and updates the most recent data (from above)
 void hourlyCheck(double temp, double humidity);
@@ -60,8 +67,8 @@ int main(){
 
 	DHT dht;
 
-	double avg_temp = 0.0l;
-	double avg_humidity = 0.0l;
+	avg_temp = 0.0l;
+	avg_humidity = 0.0l;
 
 	// counts between 0 and 59, gets incremented eveytime local temp + humidity is checked
 	// used to track when an hour has passed
@@ -82,6 +89,13 @@ int main(){
 
 	// counter so we know what to divide by to get average
 	int local_count = 0;
+
+	FILE *fp = fopen(LOG_FILE, "w");
+	if(fp != NULL){
+		fprintf(fp, "Time(PST),Local Temp,Local Humidity,Local ET,CIMIS Temp,CIMIS Humidity,CIMIS ET,Water Saved(Gallons)\n");
+		fclose(fp);
+		fp = NULL;
+	}
 
 	printf("Entering main loop.\n");
 	running = 1;
@@ -182,6 +196,28 @@ void waterPlants(){
 	lcdUpdateStatus(LCD_STATUS_IDLE);
 
 	// calculation is (gallons per day) / (24 hours) to get gallons of water used for this hour
-	water_saved += ((WATER_AMT(cimis_data.et0 * 24) - amount) / 24);
+	double saved_this_hour = ((WATER_AMT(cimis_data.et0 * 24) - amount) / 24);
+	water_saved += saved_this_hour;
+	printLog(saved_this_hour);
+}
+
+void printLog(double savings){
+	time_t raw_time;
+	struct tm *t;
+	time(&raw_time);
+	t = localtime(&raw_time);
+
+	FILE *fp = fopen(LOG_FILE, "a");
+	if(fp != NULL){
+		fprintf(fp, "%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
+				(t->tm_hour * 100) + t->tm_min,
+				C_to_F(avg_temp),
+				avg_humidity,
+				et_local,
+				cimis_data.air_temp,
+				cimis_data.humidity,
+				cimis_data.et0,
+				savings);
+	}
 }
 
