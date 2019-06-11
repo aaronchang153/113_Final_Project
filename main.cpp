@@ -43,7 +43,7 @@ int running;
 // signal handler for SIGINT (i.e. Ctrl-C)
 void handle_sigint(int sig) { running = 0; }
 
-void printLog(double savings);
+void printLog(double savings, double water_time);
 
 // gets data from CIMIS and updates the most recent data (from above)
 void hourlyCheck(double temp, double humidity);
@@ -92,7 +92,7 @@ int main(){
 
 	FILE *fp = fopen(LOG_FILE, "w");
 	if(fp != NULL){
-		fprintf(fp, "Time(PST),Local Temp,Local Humidity,Local ET,CIMIS Temp,CIMIS Humidity,CIMIS ET,Water Saved(Gallons)\n");
+		fprintf(fp, "Time(PST),Local Temp,Local Humidity,Local ET,CIMIS Temp,CIMIS Humidity,CIMIS ET,Water Time(seconds),Water Saved(Gallons)\n");
 		fclose(fp);
 		fp = NULL;
 	}
@@ -106,7 +106,7 @@ int main(){
 		while(dht.readDHT11(DHT_PIN) != DHTLIB_OK)
 			delay(2000);
 
-		printf("Local Temperature: %.2f F\t Humidity: %.2f%%\n", dht.temperature, dht.humidity);
+		printf("Local Temperature: %.2f F\t Humidity: %.2f%%\n", C_to_F(dht.temperature), dht.humidity);
 		// accumulate temp and humidity readings over the hour
 		avg_temp += dht.temperature;
 		avg_humidity += dht.humidity;
@@ -156,11 +156,13 @@ int main(){
 }
 
 void hourlyCheck(double temp, double humidity){
-	// if we successfully get the latest data from CIMIS
-	if(get_latest_data(&cimis_data) == 0){
-		double et = cimis_data.et0 * (temp / cimis_data.air_temp) * (cimis_data.humidity / humidity);
-		et_local = et;
+	// get CIMIS data once a minute until we get the information we need
+	while(get_latest_data(&cimis_data) != CIMIS_DATA_VALID){
+		delay(1000);
 	}
+
+	double et = cimis_data.et0 * (temp / cimis_data.air_temp) * (cimis_data.humidity / humidity);
+	et_local = et;
 }
 
 void waterPlants(){
@@ -169,6 +171,12 @@ void waterPlants(){
 	int tmp; // used to store return value from relayLoop
 	int detect;
 	int timeStalled = 0;
+	
+	// calculation is (gallons per day) / (24 hours) to get gallons of water used for this hour
+	double saved_this_hour = ((WATER_AMT(cimis_data.et0 * 24) - amount) / 24);
+	water_saved += saved_this_hour;
+	// water_time is in ms so divide by 1000 for seconds
+	printLog(saved_this_hour, (double)water_time / 1000);
 
 	printf("Watering plants for %.2f seconds.\n", (float) water_time / 1000.0);
 
@@ -194,14 +202,9 @@ void waterPlants(){
 	printf("Done watering.\n");
 
 	lcdUpdateStatus(LCD_STATUS_IDLE);
-
-	// calculation is (gallons per day) / (24 hours) to get gallons of water used for this hour
-	double saved_this_hour = ((WATER_AMT(cimis_data.et0 * 24) - amount) / 24);
-	water_saved += saved_this_hour;
-	printLog(saved_this_hour);
 }
 
-void printLog(double savings){
+void printLog(double savings, double water_time){
 	time_t raw_time;
 	struct tm *t;
 	time(&raw_time);
@@ -209,7 +212,7 @@ void printLog(double savings){
 
 	FILE *fp = fopen(LOG_FILE, "a");
 	if(fp != NULL){
-		fprintf(fp, "%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
+		fprintf(fp, "%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
 				(t->tm_hour * 100) + t->tm_min,
 				C_to_F(avg_temp),
 				avg_humidity,
@@ -217,6 +220,7 @@ void printLog(double savings){
 				cimis_data.air_temp,
 				cimis_data.humidity,
 				cimis_data.et0,
+				water_time,
 				savings);
 	}
 }
