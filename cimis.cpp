@@ -57,7 +57,7 @@ static int find_most_recent(struct CIMIS_data *data){
 	FILE *fp = fopen(OUTFILE, "r");
 
 	if(fp == NULL)
-		return -1;
+		return CIMIS_DATA_INVALID;
 
 	// used to store the current date and time
 	// used to find the correct line in the CIMIS file
@@ -103,11 +103,14 @@ static int find_most_recent(struct CIMIS_data *data){
 		break;
 	}
 
-	return 0;
+	if(data->humidity == 0)
+		return CIMIS_DATA_INVALID;
+
+	return CIMIS_DATA_VALID;
 }
 
 // gets the lastest information from the CIMIS FTP server and puts necessary information into the data struct
-// returns 0 on success and non-zero otherwise
+// returns CIMIS_DATA_VALID on success
 int get_latest_data(struct CIMIS_data *data){
 	// variables needed by the curl library
 	CURL *curl;
@@ -147,11 +150,7 @@ int get_latest_data(struct CIMIS_data *data){
 
 	curl_global_cleanup();
 
-	// if we failed to get the relevant data for some reason, return -2;
-	if(find_most_recent(data) != 0)
-		return -2;
-
-	return 0;
+	return find_most_recent(data);
 }
 
 #ifdef DEBUG
