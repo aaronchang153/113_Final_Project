@@ -1,6 +1,9 @@
 #ifndef CIMIS_H
 #define CIMIS_H
 
+#define CIMIS_DATA_VALID   0
+#define CIMIS_DATA_INVALID 1
+
 // stores the data we need from CIMIS
 struct CIMIS_data{
 	int station;
@@ -12,7 +15,7 @@ struct CIMIS_data{
 };
 
 // gets the lastest information from the CIMIS FTP server and puts necessary information into the data struct
-// returns 0 on success and non-zero otherwise
+// returns CIMIS_DATA_VALID on success
 int get_latest_data(struct CIMIS_data *data);
 
 
