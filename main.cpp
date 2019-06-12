@@ -222,6 +222,7 @@ void printLog(double savings, double water_time){
 				cimis_data.et0,
 				water_time,
 				savings);
+		fclose(fp);
 	}
 }
 
