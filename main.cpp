@@ -4,7 +4,6 @@
 #include <signal.h>
 #include <time.h>
 #include "cimis.h"
-#include "temp_and_humidity.h"
 #include "DHT.hpp"
 #include "relay.h"
 #include "motion.h"
@@ -92,7 +91,7 @@ int main(){
 
 	FILE *fp = fopen(LOG_FILE, "w");
 	if(fp != NULL){
-		fprintf(fp, "Time(PST),Local Temp,Local Humidity,Local ET,CIMIS Temp,CIMIS Humidity,CIMIS ET,Water Time(seconds),Water Saved(Gallons)\n");
+		fprintf(fp, "Time(PT),Local Temp,Local Humidity,Local ET,CIMIS Temp,CIMIS Humidity,CIMIS ET,Water Time(seconds),Water Saved(Gallons)\n");
 		fclose(fp);
 		fp = NULL;
 	}
@@ -158,7 +157,7 @@ int main(){
 void hourlyCheck(double temp, double humidity){
 	// get CIMIS data once a minute until we get the information we need
 	while(get_latest_data(&cimis_data) != CIMIS_DATA_VALID){
-		delay(1000);
+		delay(60000);
 	}
 
 	double et = cimis_data.et0 * (temp / cimis_data.air_temp) * (cimis_data.humidity / humidity);
