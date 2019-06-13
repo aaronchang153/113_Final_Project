@@ -17,10 +17,6 @@ cimis_d: CFLAGS+=-g -DDEBUG
 cimis_d: cimis.o
 	$(CC) -o $@ $^ $(LFLAGS)
 
-temp_and_humidity_d: CFLAGS+=-g -DDEBUG
-temp_and_humidity_d: temp_and_humidity.o DHT.o
-	$(CC) -o $@ $^ $(LFLAGS)
-
 LCD: CFLAGS+=-g -DDEBUG
 LCD: LCD.o
 	$(CC) -o $@ $^ $(LFLAGS)
@@ -41,7 +37,6 @@ clean:
 	rm -f ./${EXEC}
 	rm -f ./cimis_d
 	rm -f ./relay_d
-	rm -f ./temp_and_humidity_d
 	rm -f ./LCD
 	rm -f ./dht_d
 	rm -f ./motion_d
