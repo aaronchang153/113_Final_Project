@@ -1,4 +1,4 @@
-Time(PST),Local Temp,Local Humidity,Local ET,CIMIS Temp,CIMIS Humidity,CIMIS ET,Water Time(seconds),Water Saved(Gallons)
+Time(PDT),Local Temp,Local Humidity,Local ET,CIMIS Temp,CIMIS Humidity,CIMIS ET,Water Time(seconds),Water Saved(Gallons)
 1724,86.00,48.00,0.02,83.20,45.00,0.02,5.65,0.05
 1825,83.92,50.13,0.02,83.40,44.00,0.02,5.15,0.19
 1927,83.05,52.67,0.01,81.30,48.00,0.01,2.72,0.06
